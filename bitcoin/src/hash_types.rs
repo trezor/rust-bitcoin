@@ -14,9 +14,11 @@ pub use crate::{
 mod tests {
     use super::*;
     use crate::hashes::Hash;
+    #[cfg(feature = "secp256k1")]
+    use crate::XKeyIdentifier;
     use crate::{
         LegacySighash, PubkeyHash, ScriptHash, SegwitV0Sighash, TapSighash, WPubkeyHash,
-        WScriptHash, XKeyIdentifier,
+        WScriptHash,
     };
 
     #[test]
@@ -67,6 +69,7 @@ mod tests {
             WitnessCommitment::hash(&[]).to_string(),
             "56944c5d3f98413ef45cf54545538103cc9f298e0575820ad3591376e2e0f65d",
         );
+        #[cfg(feature = "secp256k1")]
         assert_eq!(
             XKeyIdentifier::hash(&[]).to_string(),
             "b472a266d0bd89c13706a4132ccfb16f7c3b9fcb",

@@ -11,12 +11,15 @@ use core::convert::Infallible;
 use core::fmt;
 
 use hashes::Hash as _;
+#[cfg(feature = "secp256k1")]
 use secp256k1::{Secp256k1, Verification};
 
 use crate::array_vec::ArrayVec;
 use crate::blockdata::script::witness_version::WitnessVersion;
 use crate::blockdata::script::{PushBytes, Script};
+#[cfg(feature = "secp256k1")]
 use crate::crypto::key::{CompressedPublicKey, TapTweak, TweakedPublicKey, UntweakedPublicKey};
+#[cfg(feature = "secp256k1")]
 use crate::taproot::TapNodeHash;
 
 /// The minimum byte size of a segregated witness program.
@@ -61,6 +64,7 @@ impl WitnessProgram {
     }
 
     /// Creates a [`WitnessProgram`] from a 20 byte pubkey hash.
+    #[cfg(feature = "secp256k1")]
     fn new_p2wpkh(program: [u8; 20]) -> Self {
         WitnessProgram { version: WitnessVersion::V0, program: ArrayVec::from_slice(&program) }
     }
@@ -71,11 +75,13 @@ impl WitnessProgram {
     }
 
     /// Creates a [`WitnessProgram`] from a 32 byte serialize taproot xonly pubkey.
+    #[cfg(feature = "secp256k1")]
     fn new_p2tr(program: [u8; 32]) -> Self {
         WitnessProgram { version: WitnessVersion::V1, program: ArrayVec::from_slice(&program) }
     }
 
     /// Creates a [`WitnessProgram`] from `pk` for a P2WPKH output.
+    #[cfg(feature = "secp256k1")]
     pub fn p2wpkh(pk: &CompressedPublicKey) -> Self {
         let hash = pk.wpubkey_hash();
         WitnessProgram::new_p2wpkh(hash.to_byte_array())
@@ -88,6 +94,7 @@ impl WitnessProgram {
     }
 
     /// Creates a pay to taproot address from an untweaked key.
+    #[cfg(feature = "secp256k1")]
     pub fn p2tr<C: Verification>(
         secp: &Secp256k1<C>,
         internal_key: UntweakedPublicKey,
@@ -99,6 +106,7 @@ impl WitnessProgram {
     }
 
     /// Creates a pay to taproot address from a pre-tweaked output key.
+    #[cfg(feature = "secp256k1")]
     pub fn p2tr_tweaked(output_key: TweakedPublicKey) -> Self {
         let pubkey = output_key.as_x_only_public_key().serialize();
         WitnessProgram::new_p2tr(pubkey)
