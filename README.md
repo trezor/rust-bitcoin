@@ -106,8 +106,14 @@ be usable without `std`. Both can be enabled without conflict.
 The cargo feature `secp256k1` is also enabled by default. Disabling it (via `default-features =
 false`) removes the dependency on the `secp256k1` crate (and thus on the C library `libsecp256k1`)
 together with all functionality that needs it: keys, signatures, BIP-32, PSBT and message signing.
-Scripts, transactions, addresses, locktimes, sighash computation and taproot tree construction
-remain available, making the crate pure Rust.
+Scripts, transactions, addresses (see below), locktimes, sighash computation and taproot tree
+construction remain available, making the crate pure Rust.
+
+Similarly, the default `address` feature (which implies `base58` and `bech32`) enables parsing and
+formatting of Bitcoin addresses. The `base58` feature also enables string encoding of WIF private
+keys and BIP-32 extended keys. Building with `default-features = false` (optionally adding back
+`std` or `secp256k1`) thus also drops the `base58ck` and `bech32` dependencies, leaving a crate
+focused on scripts, transactions and consensus encoding (e.g. for embedded/hardware wallet use).
 
 The library can be built and tested using [`cargo`](https://github.com/rust-lang/cargo/):
 

@@ -85,7 +85,7 @@ pub struct Xpriv {
     /// Chain code
     pub chain_code: ChainCode,
 }
-#[cfg(feature = "serde")]
+#[cfg(all(feature = "serde", feature = "base58"))]
 crate::serde_utils::serde_string_impl!(Xpriv, "a BIP-32 extended private key");
 
 #[cfg(not(feature = "std"))]
@@ -118,7 +118,7 @@ pub struct Xpub {
     /// Chain code
     pub chain_code: ChainCode,
 }
-#[cfg(feature = "serde")]
+#[cfg(all(feature = "serde", feature = "base58"))]
 crate::serde_utils::serde_string_impl!(Xpub, "a BIP-32 extended public key");
 
 /// A child number for a derived key
@@ -500,12 +500,14 @@ pub enum Error {
     UnknownVersion([u8; 4]),
     /// Encoded extended key data has wrong length
     WrongExtendedKeyLength(usize),
+    #[cfg(feature = "base58")]
     /// Base58 encoding error
     Base58(base58::Error),
     /// Hexadecimal decoding error
     Hex(hex::HexToArrayError),
     /// `PublicKey` hex should be 66 or 130 digits long.
     InvalidPublicKeyHexLength(usize),
+    #[cfg(feature = "base58")]
     /// Base58 decoded data was an invalid length.
     InvalidBase58PayloadLength(InvalidBase58PayloadLengthError),
 }
@@ -530,10 +532,12 @@ impl fmt::Display for Error {
             UnknownVersion(ref bytes) => write!(f, "unknown version magic bytes: {:?}", bytes),
             WrongExtendedKeyLength(ref len) =>
                 write!(f, "encoded extended key data has wrong length {}", len),
+            #[cfg(feature = "base58")]
             Base58(ref e) => write_err!(f, "base58 encoding error"; e),
             Hex(ref e) => write_err!(f, "Hexadecimal decoding error"; e),
             InvalidPublicKeyHexLength(got) =>
                 write!(f, "PublicKey hex should be 66 or 130 digits long, got: {}", got),
+            #[cfg(feature = "base58")]
             InvalidBase58PayloadLength(ref e) => write_err!(f, "base58 payload"; e),
         }
     }
@@ -546,8 +550,10 @@ impl std::error::Error for Error {
 
         match *self {
             Secp256k1(ref e) => Some(e),
+            #[cfg(feature = "base58")]
             Base58(ref e) => Some(e),
             Hex(ref e) => Some(e),
+            #[cfg(feature = "base58")]
             InvalidBase58PayloadLength(ref e) => Some(e),
             CannotDeriveFromHardenedKey
             | MaximumDepthExceeded
@@ -565,10 +571,12 @@ impl From<secp256k1::Error> for Error {
     fn from(e: secp256k1::Error) -> Error { Error::Secp256k1(e) }
 }
 
+#[cfg(feature = "base58")]
 impl From<base58::Error> for Error {
     fn from(err: base58::Error) -> Self { Error::Base58(err) }
 }
 
+#[cfg(feature = "base58")]
 impl From<InvalidBase58PayloadLengthError> for Error {
     fn from(e: InvalidBase58PayloadLengthError) -> Error { Self::InvalidBase58PayloadLength(e) }
 }
@@ -844,12 +852,14 @@ impl Xpub {
     }
 }
 
+#[cfg(feature = "base58")]
 impl fmt::Display for Xpriv {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         base58::encode_check_to_fmt(fmt, &self.encode()[..])
     }
 }
 
+#[cfg(feature = "base58")]
 impl FromStr for Xpriv {
     type Err = Error;
 
@@ -864,12 +874,14 @@ impl FromStr for Xpriv {
     }
 }
 
+#[cfg(feature = "base58")]
 impl fmt::Display for Xpub {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         base58::encode_check_to_fmt(fmt, &self.encode()[..])
     }
 }
 
+#[cfg(feature = "base58")]
 impl FromStr for Xpub {
     type Err = Error;
 
@@ -892,6 +904,7 @@ impl From<&Xpub> for XKeyIdentifier {
     fn from(key: &Xpub) -> XKeyIdentifier { key.identifier() }
 }
 
+#[cfg(feature = "base58")]
 /// Decoded base58 data was an invalid length.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InvalidBase58PayloadLengthError {
@@ -899,11 +912,13 @@ pub struct InvalidBase58PayloadLengthError {
     pub(crate) length: usize,
 }
 
+#[cfg(feature = "base58")]
 impl InvalidBase58PayloadLengthError {
     /// Returns the invalid payload length.
     pub fn invalid_base58_payload_length(&self) -> usize { self.length }
 }
 
+#[cfg(feature = "base58")]
 impl fmt::Display for InvalidBase58PayloadLengthError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -914,13 +929,15 @@ impl fmt::Display for InvalidBase58PayloadLengthError {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "base58"))]
 impl std::error::Error for InvalidBase58PayloadLengthError {}
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "base58")]
     use hex::test_hex_unwrap as hex;
 
+    #[cfg(feature = "base58")]
     use super::ChildNumber::{Hardened, Normal};
     use super::*;
 
@@ -1008,6 +1025,7 @@ mod tests {
         assert_eq!(indexed.child(ChildNumber::from_hardened_idx(2).unwrap()), path);
     }
 
+    #[cfg(feature = "base58")]
     fn test_path<C: secp256k1::Signing + secp256k1::Verification>(
         secp: &Secp256k1<C>,
         network: NetworkKind,
@@ -1100,6 +1118,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "base58")]
     fn test_vector_1() {
         let secp = Secp256k1::new();
         let seed = hex!("000102030405060708090a0b0c0d0e0f");
@@ -1136,6 +1155,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "base58")]
     fn test_vector_2() {
         let secp = Secp256k1::new();
         let seed = hex!("fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542");
@@ -1172,6 +1192,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "base58")]
     fn test_vector_3() {
         let secp = Secp256k1::new();
         let seed = hex!("4b381541583be4423346c643850da4b320e46a87ae3d2a4e6da11eba819cd4acba45d239319ac14f863b8d5ab5a0d0c64d2e8a1e7d1457df2e5a3c51c73235be");
@@ -1234,6 +1255,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "base58")]
     #[should_panic(expected = "Secp256k1(InvalidSecretKey)")]
     fn schnorr_broken_privkey_zeros() {
         /* this is how we generate key:
@@ -1262,6 +1284,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "base58")]
     #[should_panic(expected = "Secp256k1(InvalidSecretKey)")]
     fn schnorr_broken_privkey_ffs() {
         // Xpriv having secret key set to all 0xFF's

@@ -22,7 +22,7 @@
 
 #![cfg(feature = "serde")]
 
-#[cfg(feature = "secp256k1")]
+#[cfg(all(feature = "secp256k1", feature = "base58"))]
 use std::collections::BTreeMap;
 #[cfg(feature = "secp256k1")]
 use std::str::FromStr;
@@ -35,15 +35,23 @@ use bitcoin::hex::FromHex;
 use bitcoin::taproot::{LeafVersion, TapTree, TaprootBuilder};
 #[cfg(feature = "secp256k1")]
 use bitcoin::{
-    bip32::{ChildNumber, KeySource, Xpriv, Xpub},
+    bip32::ChildNumber,
     ecdsa,
-    hashes::{hash160, ripemd160, sha256, sha256d, Hash},
-    psbt::raw::{self, Key, Pair, ProprietaryKey},
-    psbt::{Input, Output, Psbt, PsbtSighashType},
+    psbt::raw::{Key, Pair, ProprietaryKey},
     sighash::{EcdsaSighashType, TapSighashType},
     taproot::{self, ControlBlock},
-    transaction, Address, NetworkKind, OutPoint, PrivateKey, PublicKey, Sequence, Txid,
+    PublicKey,
 };
+#[cfg(all(feature = "secp256k1", feature = "base58"))]
+use bitcoin::{
+    bip32::{KeySource, Xpriv, Xpub},
+    hashes::{hash160, ripemd160, sha256, sha256d, Hash},
+    psbt::raw,
+    psbt::{Input, Output, Psbt, PsbtSighashType},
+    transaction, OutPoint, PrivateKey, Sequence, Txid,
+};
+#[cfg(all(feature = "secp256k1", feature = "address"))]
+use bitcoin::{Address, NetworkKind};
 use bitcoin::{Amount, Block, ScriptBuf, Target, Transaction, TxIn, TxOut, Work};
 
 /// Implicitly does regression test for `BlockHeader` also.
@@ -145,7 +153,7 @@ fn serde_regression_witness() {
     assert_eq!(got, want)
 }
 
-#[cfg(feature = "secp256k1")]
+#[cfg(all(feature = "secp256k1", feature = "address"))]
 #[test]
 fn serde_regression_address() {
     let s = include_str!("data/serde/public_key_hex");
@@ -157,7 +165,7 @@ fn serde_regression_address() {
     assert_eq!(got, want)
 }
 
-#[cfg(feature = "secp256k1")]
+#[cfg(all(feature = "secp256k1", feature = "base58"))]
 #[test]
 fn serde_regression_extended_priv_key() {
     let s = include_str!("data/serde/extended_priv_key");
@@ -167,7 +175,7 @@ fn serde_regression_extended_priv_key() {
     assert_eq!(got, want)
 }
 
-#[cfg(feature = "secp256k1")]
+#[cfg(all(feature = "secp256k1", feature = "base58"))]
 #[test]
 fn serde_regression_extended_pub_key() {
     let s = include_str!("data/serde/extended_pub_key");
@@ -211,7 +219,7 @@ fn serde_regression_child_number() {
     assert_eq!(got, want)
 }
 
-#[cfg(feature = "secp256k1")]
+#[cfg(all(feature = "secp256k1", feature = "base58"))]
 #[test]
 fn serde_regression_private_key() {
     let sk = PrivateKey::from_wif("cVt4o7BGAig1UXywgGSmARhxMdzP5qvQsxKkSsc1XEkw3tDTQFpy").unwrap();
@@ -230,7 +238,7 @@ fn serde_regression_public_key() {
     assert_eq!(got, want)
 }
 
-#[cfg(feature = "secp256k1")]
+#[cfg(all(feature = "secp256k1", feature = "base58"))]
 #[test]
 fn serde_regression_psbt() {
     let tx = Transaction {

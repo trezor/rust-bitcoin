@@ -26,6 +26,7 @@ mod message_signing {
     use hashes::{sha256d, Hash};
     use secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
 
+    #[cfg(feature = "address")]
     use crate::address::{Address, AddressType};
     use crate::crypto::key::PublicKey;
     use crate::internal_macros::write_err;
@@ -41,6 +42,7 @@ mod message_signing {
         /// Invalid base64 encoding.
         InvalidBase64,
         /// Unsupported Address Type
+        #[cfg(feature = "address")]
         UnsupportedAddressType(AddressType),
     }
 
@@ -56,6 +58,7 @@ mod message_signing {
                 InvalidLength => write!(f, "length not 65 bytes"),
                 InvalidEncoding(ref e) => write_err!(f, "invalid encoding"; e),
                 InvalidBase64 => write!(f, "invalid base64"),
+                #[cfg(feature = "address")]
                 UnsupportedAddressType(ref address_type) =>
                     write!(f, "unsupported address type: {}", address_type),
             }
@@ -69,7 +72,9 @@ mod message_signing {
 
             match *self {
                 InvalidEncoding(ref e) => Some(e),
-                InvalidLength | InvalidBase64 | UnsupportedAddressType(_) => None,
+                InvalidLength | InvalidBase64 => None,
+                #[cfg(feature = "address")]
+                UnsupportedAddressType(_) => None,
             }
         }
     }
@@ -146,6 +151,7 @@ mod message_signing {
         /// Verify that the signature signs the message and was signed by the given address.
         ///
         /// To get the message hash from a message, use [super::signed_msg_hash].
+        #[cfg(feature = "address")]
         pub fn is_signed_by_address<C: secp256k1::Verification>(
             &self,
             secp_ctx: &secp256k1::Secp256k1<C>,
@@ -224,7 +230,12 @@ mod tests {
     }
 
     #[test]
-    #[cfg(all(feature = "secp-recovery", feature = "base64", feature = "rand-std"))]
+    #[cfg(all(
+        feature = "secp-recovery",
+        feature = "base64",
+        feature = "rand-std",
+        feature = "address"
+    ))]
     fn test_message_signature() {
         use core::str::FromStr;
 
@@ -267,7 +278,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(all(feature = "secp-recovery", feature = "base64"))]
+    #[cfg(all(feature = "secp-recovery", feature = "base64", feature = "address"))]
     fn test_incorrect_message_signature() {
         use base64::prelude::{Engine as _, BASE64_STANDARD};
         use secp256k1;

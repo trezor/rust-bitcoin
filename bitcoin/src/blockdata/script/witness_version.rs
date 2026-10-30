@@ -11,6 +11,7 @@ use core::convert::Infallible;
 use core::fmt;
 use core::str::FromStr;
 
+#[cfg(feature = "bech32")]
 use bech32::Fe32;
 use units::{parse, ParseIntError};
 
@@ -74,6 +75,7 @@ impl WitnessVersion {
     pub fn to_num(self) -> u8 { self as u8 }
 
     /// Converts this witness version to a GF32 field element.
+    #[cfg(feature = "bech32")]
     pub fn to_fe(self) -> Fe32 {
         Fe32::try_from(self.to_num()).expect("0-16 are valid fe32 values")
     }
@@ -93,6 +95,7 @@ impl FromStr for WitnessVersion {
     }
 }
 
+#[cfg(feature = "bech32")]
 impl TryFrom<bech32::Fe32> for WitnessVersion {
     type Error = TryFromError;
 
@@ -153,6 +156,7 @@ impl<'a> TryFrom<Instruction<'a>> for WitnessVersion {
     }
 }
 
+#[cfg(feature = "bech32")]
 impl From<WitnessVersion> for Fe32 {
     fn from(version: WitnessVersion) -> Self { version.to_fe() }
 }

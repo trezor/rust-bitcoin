@@ -42,8 +42,8 @@ pub use self::{
 
 /// A Partially Signed Transaction.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(crate = "actual_serde"))]
+#[cfg_attr(all(feature = "serde", feature = "base58"), derive(Serialize, Deserialize))]
+#[cfg_attr(all(feature = "serde", feature = "base58"), serde(crate = "actual_serde"))]
 pub struct Psbt {
     /// The unsigned transaction, scriptSigs and witnesses for each input must be empty.
     pub unsigned_tx: Transaction,
@@ -53,10 +53,16 @@ pub struct Psbt {
     /// derivation path as defined by BIP 32.
     pub xpub: BTreeMap<Xpub, KeySource>,
     /// Global proprietary key-value pairs.
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde_utils::btreemap_as_seq_byte_values"))]
+    #[cfg_attr(
+        all(feature = "serde", feature = "base58"),
+        serde(with = "crate::serde_utils::btreemap_as_seq_byte_values")
+    )]
     pub proprietary: BTreeMap<raw::ProprietaryKey, Vec<u8>>,
     /// Unknown global key-value pairs.
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde_utils::btreemap_as_seq_byte_values"))]
+    #[cfg_attr(
+        all(feature = "serde", feature = "base58"),
+        serde(with = "crate::serde_utils::btreemap_as_seq_byte_values")
+    )]
     pub unknown: BTreeMap<raw::Key, Vec<u8>>,
 
     /// The corresponding key-value map for each input in the unsigned transaction.
@@ -1533,7 +1539,7 @@ mod tests {
         assert_eq!(hex, psbt.serialize_hex());
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(all(feature = "serde", feature = "base58"))]
     #[test]
     fn test_serde_psbt() {
         //! Create a full PSBT value with various fields filled and make sure it can be JSONized.

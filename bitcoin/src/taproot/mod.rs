@@ -1494,7 +1494,7 @@ mod test {
 
     use super::*;
     use crate::sighash::{TapSighash, TapSighashTag};
-    #[cfg(feature = "secp256k1")]
+    #[cfg(all(feature = "secp256k1", feature = "address"))]
     use crate::{Address, KnownHrp};
     extern crate serde_json;
 
@@ -1821,7 +1821,7 @@ mod test {
     }
 
     #[test]
-    #[cfg(feature = "secp256k1")]
+    #[cfg(all(feature = "secp256k1", feature = "address"))]
     fn bip_341_tests() {
         fn process_script_trees(
             v: &serde_json::Value,
@@ -1906,7 +1906,7 @@ mod test {
         }
     }
 
-    #[cfg(feature = "secp256k1")]
+    #[cfg(all(feature = "secp256k1", feature = "address"))]
     fn bip_341_read_json() -> serde_json::Value {
         let json_str = include_str!("../../tests/data/bip341_tests.json");
         serde_json::from_str(json_str).expect("JSON was not well-formatted")

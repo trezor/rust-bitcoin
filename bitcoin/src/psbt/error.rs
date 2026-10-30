@@ -139,8 +139,13 @@ impl fmt::Display for Error {
                 // directly using debug forms of psbthash enums
                 write!(f, "Preimage {:?} does not match {:?} hash {:?}", preimage, hash_type, hash)
             }
+            #[cfg(feature = "base58")]
             CombineInconsistentKeySources(ref s) => {
                 write!(f, "combine conflict: {}", s)
+            }
+            #[cfg(not(feature = "base58"))]
+            CombineInconsistentKeySources(ref s) => {
+                write!(f, "combine conflict: {:?}", s)
             }
             ConsensusEncoding(ref e) => write_err!(f, "bitcoin consensus encoding error"; e),
             NegativeFee => f.write_str("PSBT has a negative fee which is not allowed"),

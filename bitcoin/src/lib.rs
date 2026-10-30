@@ -16,11 +16,17 @@
 //! ## Available feature flags
 //!
 //! * `std` - the usual dependency on `std` (default).
+//! * `address` - enables the `address` module, i.e. parsing and formatting Bitcoin addresses
+//!   (default). Implies `base58` and `bech32`.
+//! * `base58` - (dependency), enables base58check string encoding: legacy addresses, WIF private
+//!   keys, BIP-32 extended keys (`Display`/`FromStr`/`serde` for `Xpriv`/`Xpub`) and `serde`
+//!   for `Psbt`.
+//! * `bech32` - (dependency), enables bech32(m) encoding of segwit addresses and conversions
+//!   between `WitnessVersion` and `bech32::Fe32`.
 //! * `secp256k1` - (dependency), enables keys, signatures, BIP-32, PSBT, message signing and
 //!   anything else that requires elliptic curve operations (default). Without it, the crate
-//!   is pure Rust and still supports scripts, transactions, addresses, locktimes, sighash
-//!   computation and taproot tree construction. Implied by `rand`, `secp-recovery` and
-//!   `secp-lowmemory`.
+//!   is pure Rust and still supports scripts, transactions, locktimes, sighash computation
+//!   and taproot tree construction. Implied by `rand`, `secp-recovery` and `secp-lowmemory`.
 //! * `secp-recovery` - enables calculating public key from a signature and message.
 //! * `base64` - (dependency), enables encoding of PSBTs and message signatures.
 //! * `rand` - (dependency), makes it more convenient to generate random values.
@@ -66,9 +72,11 @@ extern crate alloc;
 pub extern crate base64;
 
 /// Bitcoin base58 encoding and decoding.
+#[cfg(feature = "base58")]
 pub extern crate base58;
 
 /// Re-export the `bech32` crate.
+#[cfg(feature = "bech32")]
 pub extern crate bech32;
 
 /// Rust implementation of cryptographic hash function algorithms.
@@ -107,6 +115,7 @@ mod serde_utils;
 
 #[macro_use]
 pub mod p2p;
+#[cfg(feature = "address")]
 pub mod address;
 pub mod bip152;
 pub mod bip158;
@@ -131,7 +140,6 @@ pub mod taproot;
 #[rustfmt::skip]                // Keep public re-exports separate.
 #[doc(inline)]
 pub use crate::{
-    address::{Address, AddressType, KnownHrp},
     amount::{Amount, Denomination, SignedAmount},
     bip158::{FilterHash, FilterHeader},
     blockdata::block::{self, Block, BlockHash, TxMerkleNode, WitnessMerkleNode, WitnessCommitment},
@@ -155,6 +163,11 @@ pub use crate::{
     sighash::{EcdsaSighashType, TapSighashType},
     taproot::{TapBranchTag, TapLeafHash, TapLeafTag, TapNodeHash, TapTweakHash, TapTweakTag},
 };
+
+#[rustfmt::skip]                // Keep public re-exports separate.
+#[doc(inline)]
+#[cfg(feature = "address")]
+pub use crate::address::{Address, AddressType, KnownHrp};
 
 #[rustfmt::skip]                // Keep public re-exports separate.
 #[doc(inline)]

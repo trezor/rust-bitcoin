@@ -17,8 +17,8 @@ rust-version = "1.60.0"
 exclude = ["api", "tests", "contrib"]
 
 [features]
-default = [ "std", "secp256k1", "secp-recovery" ]
-std = ["base58/std", "bech32/std", "hashes/std", "hex/std", "io/std", "secp256k1?/std", "units/std"]
+default = [ "std", "address", "secp256k1", "secp-recovery" ]
+std = ["base58?/std", "bech32?/std", "hashes/std", "hex/std", "io/std", "secp256k1?/std", "units/std"]
 rand-std = ["secp256k1/rand-std", "std"]
 rand = ["secp256k1", "secp256k1/rand"]
 serde = ["actual-serde", "hashes/serde", "secp256k1?/serde", "units/serde"]
@@ -28,14 +28,15 @@ secp-lowmemory = ["secp256k1", "secp256k1/lowmemory"]
 secp-recovery = ["secp256k1", "secp256k1/recovery"]
 bitcoinconsensus-std = ["bitcoinconsensus/std", "std"]
 arbitrary = ["actual-arbitrary", "units/arbitrary"]
+address = ["base58", "bech32"]
 
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
-base58 = { package = "base58ck", path = "../base58", version = "0.1.101", default-features = false }
-bech32 = { version = "0.11.0", default-features = false, features = ["alloc"] }
+base58 = { package = "base58ck", path = "../base58", version = "0.1.101", default-features = false, optional = true }
+bech32 = { version = "0.11.0", default-features = false, features = ["alloc"], optional = true }
 hashes = { package = "bitcoin_hashes", path = "../hashes", version = "0.14.101", default-features = false, features = ["alloc", "io"] }
 hex = { package = "hex-conservative", version = "0.2.2", default-features = false, features = ["alloc"] }
 hex_lit = "0.1.1"
@@ -62,7 +63,7 @@ bincode = "1.3.1"
 
 [[example]]
 name = "bip32"
-required-features = ["secp256k1"]
+required-features = ["secp256k1", "address"]
 
 [[example]]
 name = "handshake"
@@ -70,19 +71,19 @@ required-features = ["std", "rand-std"]
 
 [[example]]
 name = "ecdsa-psbt"
-required-features = ["std", "secp256k1", "bitcoinconsensus"]
+required-features = ["std", "secp256k1", "address", "bitcoinconsensus"]
 
 [[example]]
 name = "sign-tx-segwit-v0"
-required-features = ["std", "rand-std"]
+required-features = ["std", "rand-std", "address"]
 
 [[example]]
 name = "sign-tx-taproot"
-required-features = ["std", "rand-std"]
+required-features = ["std", "rand-std", "address"]
 
 [[example]]
 name = "taproot-psbt"
-required-features = ["std", "rand-std", "bitcoinconsensus"]
+required-features = ["std", "rand-std", "address", "bitcoinconsensus"]
 
 [[example]]
 name = "sighash"
@@ -97,14 +98,15 @@ enabled = true
 [package.metadata.rbmt.test]
 msrv_overrides = { "encoding" = "1.74.0" }
 examples = [
-    "sign-tx-segwit-v0:std rand-std",
-    "sign-tx-taproot:std rand-std",
+    "sign-tx-segwit-v0:std rand-std address",
+    "sign-tx-taproot:std rand-std address",
     "sighash:std secp256k1",
 ]
 exact_features = [
-    ["bitcoinconsensus", "secp-recovery", "base64", "serde"],
+    ["bitcoinconsensus", "address", "secp-recovery", "base64", "serde"],
     ["std", "serde"],
-    ["std", "bitcoinconsensus-std", "secp-recovery", "base64", "serde"],
+    ["std", "secp-recovery", "base64", "serde"],
+    ["std", "bitcoinconsensus-std", "address", "secp-recovery", "base64", "serde"],
 ]
 
 [package.metadata.rbmt.prerelease]

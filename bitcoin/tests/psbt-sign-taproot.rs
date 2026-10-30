@@ -1,4 +1,4 @@
-#![cfg(all(feature = "secp256k1", not(feature = "rand-std")))]
+#![cfg(all(feature = "secp256k1", feature = "address", not(feature = "rand-std")))]
 
 use std::collections::BTreeMap;
 use std::str::FromStr;

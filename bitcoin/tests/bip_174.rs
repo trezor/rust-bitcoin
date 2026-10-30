@@ -1,7 +1,7 @@
 //! Tests PSBT integration vectors from BIP 174
 //! defined at <https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki#test-vectors>
 
-#![cfg(feature = "secp256k1")]
+#![cfg(all(feature = "secp256k1", feature = "base58"))]
 
 use std::collections::BTreeMap;
 use std::str::FromStr;

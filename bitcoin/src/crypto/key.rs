@@ -6,9 +6,10 @@
 //! (de)serialized.
 
 use core::convert::Infallible;
-use core::fmt::{self, Write as _};
-use core::ops;
+#[cfg(feature = "base58")]
+use core::fmt::Write as _;
 use core::str::FromStr;
+use core::{fmt, ops};
 
 use hashes::{hash160, Hash};
 use hex::{FromHex, HexToArrayError};
@@ -441,6 +442,7 @@ impl PrivateKey {
         Ok(PrivateKey::new(secp256k1::SecretKey::from_slice(data)?, network))
     }
 
+    #[cfg(feature = "base58")]
     /// Format the private key to WIF format.
     #[rustfmt::skip]
     pub fn fmt_wif(&self, fmt: &mut dyn fmt::Write) -> fmt::Result {
@@ -457,6 +459,7 @@ impl PrivateKey {
         fmt.write_str(&privkey)
     }
 
+    #[cfg(feature = "base58")]
     /// Get WIF encoding of this private key.
     pub fn to_wif(self) -> String {
         let mut buf = String::new();
@@ -465,6 +468,7 @@ impl PrivateKey {
         buf
     }
 
+    #[cfg(feature = "base58")]
     /// Parse WIF encoded private key.
     pub fn from_wif(wif: &str) -> Result<PrivateKey, FromWifError> {
         let data = base58::decode_check(wif)?;
@@ -507,10 +511,12 @@ impl PrivateKey {
     }
 }
 
+#[cfg(feature = "base58")]
 impl fmt::Display for PrivateKey {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { self.fmt_wif(f) }
 }
 
+#[cfg(feature = "base58")]
 impl FromStr for PrivateKey {
     type Err = FromWifError;
     fn from_str(s: &str) -> Result<PrivateKey, FromWifError> { PrivateKey::from_wif(s) }
@@ -521,14 +527,14 @@ impl ops::Index<ops::RangeFull> for PrivateKey {
     fn index(&self, _: ops::RangeFull) -> &[u8] { &self.inner[..] }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(all(feature = "serde", feature = "base58"))]
 impl serde::Serialize for PrivateKey {
     fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
         s.collect_str(self)
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(all(feature = "serde", feature = "base58"))]
 impl<'de> serde::Deserialize<'de> for PrivateKey {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<PrivateKey, D::Error> {
         struct WifVisitor;
@@ -957,6 +963,7 @@ impl From<secp256k1::Error> for FromSliceError {
     fn from(e: secp256k1::Error) -> Self { Self::Secp256k1(e) }
 }
 
+#[cfg(feature = "base58")]
 /// Error generated from WIF key format.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
@@ -971,10 +978,12 @@ pub enum FromWifError {
     Secp256k1(secp256k1::Error),
 }
 
+#[cfg(feature = "base58")]
 impl From<Infallible> for FromWifError {
     fn from(never: Infallible) -> Self { match never {} }
 }
 
+#[cfg(feature = "base58")]
 impl fmt::Display for FromWifError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use FromWifError::*;
@@ -990,7 +999,7 @@ impl fmt::Display for FromWifError {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "base58"))]
 impl std::error::Error for FromWifError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         use FromWifError::*;
@@ -1004,20 +1013,24 @@ impl std::error::Error for FromWifError {
     }
 }
 
+#[cfg(feature = "base58")]
 impl From<base58::Error> for FromWifError {
     fn from(e: base58::Error) -> Self { Self::Base58(e) }
 }
 
+#[cfg(feature = "base58")]
 impl From<secp256k1::Error> for FromWifError {
     fn from(e: secp256k1::Error) -> Self { Self::Secp256k1(e) }
 }
 
+#[cfg(feature = "base58")]
 impl From<InvalidBase58PayloadLengthError> for FromWifError {
     fn from(e: InvalidBase58PayloadLengthError) -> FromWifError {
         Self::InvalidBase58PayloadLength(e)
     }
 }
 
+#[cfg(feature = "base58")]
 impl From<InvalidAddressVersionError> for FromWifError {
     fn from(e: InvalidAddressVersionError) -> FromWifError { Self::InvalidAddressVersion(e) }
 }
@@ -1124,6 +1137,7 @@ impl std::error::Error for UncompressedPublicKeyError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> { None }
 }
 
+#[cfg(feature = "base58")]
 /// Decoded base58 data was an invalid length.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InvalidBase58PayloadLengthError {
@@ -1131,20 +1145,23 @@ pub struct InvalidBase58PayloadLengthError {
     pub(crate) length: usize,
 }
 
+#[cfg(feature = "base58")]
 impl InvalidBase58PayloadLengthError {
     /// Returns the invalid payload length.
     pub fn invalid_base58_payload_length(&self) -> usize { self.length }
 }
 
+#[cfg(feature = "base58")]
 impl fmt::Display for InvalidBase58PayloadLengthError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "decoded base58 data was an invalid length: {} (expected 33 or 34)", self.length)
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "base58"))]
 impl std::error::Error for InvalidBase58PayloadLengthError {}
 
+#[cfg(feature = "base58")]
 /// Invalid address version in decoded base58 data.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InvalidAddressVersionError {
@@ -1152,26 +1169,30 @@ pub struct InvalidAddressVersionError {
     pub(crate) invalid: u8,
 }
 
+#[cfg(feature = "base58")]
 impl InvalidAddressVersionError {
     /// Returns the invalid version.
     pub fn invalid_address_version(&self) -> u8 { self.invalid }
 }
 
+#[cfg(feature = "base58")]
 impl fmt::Display for InvalidAddressVersionError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "invalid address version in decoded base58 data {}", self.invalid)
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "base58"))]
 impl std::error::Error for InvalidAddressVersionError {}
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(feature = "address")]
     use crate::address::Address;
 
     #[test]
+    #[cfg(feature = "address")]
     fn test_key_derivation() {
         // testnet compressed
         let sk =
@@ -1243,7 +1264,7 @@ mod tests {
         assert!(upk.wpubkey_hash().is_err());
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(all(feature = "serde", feature = "base58"))]
     #[test]
     fn test_key_serde() {
         use serde_test::{assert_tokens, Configure, Token};
@@ -1546,7 +1567,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "std")]
+    #[cfg(all(feature = "std", feature = "base58"))]
     fn private_key_debug_is_obfuscated() {
         let sk =
             PrivateKey::from_str("cVt4o7BGAig1UXywgGSmARhxMdzP5qvQsxKkSsc1XEkw3tDTQFpy").unwrap();
@@ -1557,7 +1578,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(not(feature = "std"))]
+    #[cfg(all(not(feature = "std"), feature = "base58"))]
     fn private_key_debug_is_obfuscated() {
         let sk =
             PrivateKey::from_str("cVt4o7BGAig1UXywgGSmARhxMdzP5qvQsxKkSsc1XEkw3tDTQFpy").unwrap();
