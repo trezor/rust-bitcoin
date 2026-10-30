@@ -18,6 +18,7 @@ impl<'a> serde::Serialize for SerializeBytesAsHex<'a> {
     }
 }
 
+#[cfg(feature = "secp256k1")]
 pub mod btreemap_byte_values {
     //! Module for serialization of BTreeMaps with hex byte values.
     #![allow(missing_docs)]
@@ -86,6 +87,7 @@ pub mod btreemap_byte_values {
     }
 }
 
+#[cfg(feature = "secp256k1")]
 pub mod btreemap_as_seq {
     //! Module for serialization of BTreeMaps as lists of sequences because
     //! serde_json will not serialize hashmaps with non-string keys be default.
@@ -156,6 +158,7 @@ pub mod btreemap_as_seq {
     }
 }
 
+#[cfg(feature = "secp256k1")]
 pub mod btreemap_as_seq_byte_values {
     //! Module for serialization of BTreeMaps as lists of sequences because
     //! serde_json will not serialize hashmaps with non-string keys be default.
@@ -239,6 +242,7 @@ pub mod btreemap_as_seq_byte_values {
     }
 }
 
+#[cfg(feature = "secp256k1")]
 pub mod hex_bytes {
     //! Module for serialization of byte arrays as hex strings.
     #![allow(missing_docs)]

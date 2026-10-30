@@ -103,6 +103,12 @@ Enabling the `no-std` feature does not disable `std`. To disable the `std` featu
 default features. The `no-std` feature only enables additional features required for this crate to
 be usable without `std`. Both can be enabled without conflict.
 
+The cargo feature `secp256k1` is also enabled by default. Disabling it (via `default-features =
+false`) removes the dependency on the `secp256k1` crate (and thus on the C library `libsecp256k1`)
+together with all functionality that needs it: keys, signatures, BIP-32, PSBT and message signing.
+Scripts, transactions, addresses, locktimes, sighash computation and taproot tree construction
+remain available, making the crate pure Rust.
+
 The library can be built and tested using [`cargo`](https://github.com/rust-lang/cargo/):
 
 ```

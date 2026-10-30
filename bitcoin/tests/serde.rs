@@ -22,24 +22,29 @@
 
 #![cfg(feature = "serde")]
 
+#[cfg(feature = "secp256k1")]
 use std::collections::BTreeMap;
+#[cfg(feature = "secp256k1")]
 use std::str::FromStr;
 
 use bincode::serialize;
-use bitcoin::bip32::{ChildNumber, KeySource, Xpriv, Xpub};
 use bitcoin::blockdata::locktime::{absolute, relative};
 use bitcoin::blockdata::witness::Witness;
 use bitcoin::consensus::encode::deserialize;
-use bitcoin::hashes::{hash160, ripemd160, sha256, sha256d, Hash};
 use bitcoin::hex::FromHex;
-use bitcoin::psbt::raw::{self, Key, Pair, ProprietaryKey};
-use bitcoin::psbt::{Input, Output, Psbt, PsbtSighashType};
-use bitcoin::sighash::{EcdsaSighashType, TapSighashType};
-use bitcoin::taproot::{self, ControlBlock, LeafVersion, TapTree, TaprootBuilder};
+use bitcoin::taproot::{LeafVersion, TapTree, TaprootBuilder};
+#[cfg(feature = "secp256k1")]
 use bitcoin::{
-    ecdsa, transaction, Address, Amount, Block, NetworkKind, OutPoint, PrivateKey, PublicKey,
-    ScriptBuf, Sequence, Target, Transaction, TxIn, TxOut, Txid, Work,
+    bip32::{ChildNumber, KeySource, Xpriv, Xpub},
+    ecdsa,
+    hashes::{hash160, ripemd160, sha256, sha256d, Hash},
+    psbt::raw::{self, Key, Pair, ProprietaryKey},
+    psbt::{Input, Output, Psbt, PsbtSighashType},
+    sighash::{EcdsaSighashType, TapSighashType},
+    taproot::{self, ControlBlock},
+    transaction, Address, NetworkKind, OutPoint, PrivateKey, PublicKey, Sequence, Txid,
 };
+use bitcoin::{Amount, Block, ScriptBuf, Target, Transaction, TxIn, TxOut, Work};
 
 /// Implicitly does regression test for `BlockHeader` also.
 #[test]
@@ -140,6 +145,7 @@ fn serde_regression_witness() {
     assert_eq!(got, want)
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn serde_regression_address() {
     let s = include_str!("data/serde/public_key_hex");
@@ -151,6 +157,7 @@ fn serde_regression_address() {
     assert_eq!(got, want)
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn serde_regression_extended_priv_key() {
     let s = include_str!("data/serde/extended_priv_key");
@@ -160,6 +167,7 @@ fn serde_regression_extended_priv_key() {
     assert_eq!(got, want)
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn serde_regression_extended_pub_key() {
     let s = include_str!("data/serde/extended_pub_key");
@@ -169,6 +177,7 @@ fn serde_regression_extended_pub_key() {
     assert_eq!(got, want)
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn serde_regression_ecdsa_sig() {
     let s = include_str!("data/serde/ecdsa_sig_hex");
@@ -182,6 +191,7 @@ fn serde_regression_ecdsa_sig() {
     assert_eq!(got, want)
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn serde_regression_control_block() {
     let s = include_str!("data/serde/control_block_hex");
@@ -192,6 +202,7 @@ fn serde_regression_control_block() {
     assert_eq!(got, want)
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn serde_regression_child_number() {
     let num = ChildNumber::Normal { index: 0xDEADBEEF };
@@ -200,6 +211,7 @@ fn serde_regression_child_number() {
     assert_eq!(got, want)
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn serde_regression_private_key() {
     let sk = PrivateKey::from_wif("cVt4o7BGAig1UXywgGSmARhxMdzP5qvQsxKkSsc1XEkw3tDTQFpy").unwrap();
@@ -208,6 +220,7 @@ fn serde_regression_private_key() {
     assert_eq!(got, want)
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn serde_regression_public_key() {
     let s = include_str!("data/serde/public_key_hex");
@@ -217,6 +230,7 @@ fn serde_regression_public_key() {
     assert_eq!(got, want)
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn serde_regression_psbt() {
     let tx = Transaction {
@@ -320,6 +334,7 @@ fn serde_regression_psbt() {
     assert_eq!(got, want)
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn serde_regression_raw_pair() {
     let pair = Pair {
@@ -331,6 +346,7 @@ fn serde_regression_raw_pair() {
     assert_eq!(got, want)
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn serde_regression_proprietary_key() {
     let key = ProprietaryKey {
@@ -343,6 +359,7 @@ fn serde_regression_proprietary_key() {
     assert_eq!(got, want)
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn serde_regression_taproot_sig() {
     let s = include_str!("data/serde/taproot_sig_hex");

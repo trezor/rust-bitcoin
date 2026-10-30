@@ -23,13 +23,15 @@ use io::{Read, Write};
 use crate::array_vec::ArrayVec;
 use crate::consensus::encode::{Error, MAX_VEC_SIZE};
 use crate::consensus::{Decodable, Encodable, WriteExt};
+#[cfg(feature = "secp256k1")]
 use crate::crypto::ecdsa;
 #[cfg(feature = "encoding")]
 use crate::internal_macros::write_err;
 use crate::prelude::*;
+#[cfg(feature = "secp256k1")]
+use crate::taproot;
 use crate::taproot::{
-    self, LeafScript, LeafVersion, TAPROOT_ANNEX_PREFIX, TAPROOT_CONTROL_BASE_SIZE,
-    TAPROOT_LEAF_MASK,
+    LeafScript, LeafVersion, TAPROOT_ANNEX_PREFIX, TAPROOT_CONTROL_BASE_SIZE, TAPROOT_LEAF_MASK,
 };
 use crate::{Script, VarInt};
 
@@ -575,6 +577,7 @@ impl Witness {
     /// serialized public key. Also useful for spending a P2SH-P2WPKH output.
     ///
     /// It is expected that `pubkey` is related to the secret key used to create `signature`.
+    #[cfg(feature = "secp256k1")]
     pub fn p2wpkh(signature: &ecdsa::Signature, pubkey: &secp256k1::PublicKey) -> Witness {
         let mut witness = Witness::new();
         witness.push_slice(&signature.serialize());
@@ -583,6 +586,7 @@ impl Witness {
     }
 
     /// Creates a witness required to do a key path spend of a P2TR output.
+    #[cfg(feature = "secp256k1")]
     pub fn p2tr_key_spend(signature: &taproot::Signature) -> Witness {
         let mut witness = Witness::new();
         witness.push_slice(&signature.serialize());
@@ -683,6 +687,7 @@ impl Witness {
     /// Pushes, as a new element on the witness, an ECDSA signature.
     ///
     /// Pushes the DER encoded signature + sighash_type, requires an allocation.
+    #[cfg(feature = "secp256k1")]
     pub fn push_ecdsa_signature(&mut self, signature: &ecdsa::Signature) {
         self.push_slice(&signature.serialize())
     }
@@ -1096,6 +1101,7 @@ mod test {
 
     use super::*;
     use crate::consensus::{deserialize, serialize};
+    #[cfg(feature = "secp256k1")]
     use crate::sighash::EcdsaSighashType;
     use crate::Transaction;
 
@@ -1186,6 +1192,7 @@ mod test {
         }
     }
 
+    #[cfg(feature = "secp256k1")]
     #[test]
     fn test_push_ecdsa_sig() {
         // The very first signature in block 734,958

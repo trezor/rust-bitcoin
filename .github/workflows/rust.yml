@@ -156,6 +156,11 @@ jobs:
           targets: thumbv7m-none-eabi
       - name: "Install rust-src"
         run: rustup component add rust-src
+      - name: "Build bitcoin without secp256k1"
+        run: |
+          cp Cargo-recent.lock Cargo.lock
+          cargo build --locked -p bitcoin --no-default-features --target thumbv7m-none-eabi
+          ! cargo tree --locked -p bitcoin --no-default-features -e normal | grep secp256k1
       - name: "Run bitcoin/embedded"
         run: cd bitcoin/embedded && cargo run --target thumbv7m-none-eabi
       - name: "Run hashes/embedded no alloc"
