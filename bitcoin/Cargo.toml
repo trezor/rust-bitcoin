@@ -39,7 +39,6 @@ base58 = { package = "base58ck", path = "../base58", version = "0.1.101", defaul
 bech32 = { version = "0.11.0", default-features = false, features = ["alloc"], optional = true }
 hashes = { package = "bitcoin_hashes", path = "../hashes", version = "0.14.101", default-features = false, features = ["alloc", "io"] }
 hex = { package = "hex-conservative", version = "0.2.2", default-features = false, features = ["alloc"] }
-hex_lit = "0.1.1"
 io = { package = "bitcoin-io", path = "../io", version = "0.1.101", default-features = false, features = ["alloc"] }
 secp256k1 = { version = "0.29.0", default-features = false, features = ["hashes", "alloc"], optional = true }
 units = { package = "bitcoin-units", path = "../units", version = "0.1.101", default-features = false, features = ["alloc"] }
@@ -60,6 +59,7 @@ actual-arbitrary = { package = "arbitrary", version = "1.0.1", optional = true }
 serde_json = "1.0.68"
 serde_test = "1.0.19"
 bincode = "1.3.1"
+hex_lit = "0.1.1"
 
 [[example]]
 name = "bip32"
