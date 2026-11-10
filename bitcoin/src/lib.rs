@@ -6,7 +6,7 @@
 //! primitives. It is designed for Rust programs built to work with the Bitcoin
 //! network.
 //!
-//! Except for its dependency on libsecp256k1 (and optionally libbitcoinconsensus),
+//! Except for its (optional) dependency on libsecp256k1 (and optionally libbitcoinconsensus),
 //! this library is written entirely in Rust. It illustrates the benefits of
 //! strong type safety, including ownership and lifetime, for financial and/or cryptographic software.
 //!
@@ -16,6 +16,11 @@
 //! ## Available feature flags
 //!
 //! * `std` - the usual dependency on `std` (default).
+//! * `secp256k1` - (dependency), enables keys, signatures, BIP-32, PSBT, message signing and
+//!   anything else that requires elliptic curve operations (default). Without it, the crate
+//!   is pure Rust and still supports scripts, transactions, addresses, locktimes, sighash
+//!   computation and taproot tree construction. Implied by `rand`, `secp-recovery` and
+//!   `secp-lowmemory`.
 //! * `secp-recovery` - enables calculating public key from a signature and message.
 //! * `base64` - (dependency), enables encoding of PSBTs and message signatures.
 //! * `rand` - (dependency), makes it more convenient to generate random values.
@@ -80,6 +85,7 @@ pub extern crate ordered;
 
 /// Rust wrapper library for Pieter Wuille's libsecp256k1.  Implements ECDSA and BIP 340 signatures
 /// for the SECG elliptic curve group secp256k1 and related utilities.
+#[cfg(feature = "secp256k1")]
 pub extern crate secp256k1;
 
 #[cfg(feature = "serde")]
@@ -100,6 +106,7 @@ pub mod p2p;
 pub mod address;
 pub mod bip152;
 pub mod bip158;
+#[cfg(feature = "secp256k1")]
 pub mod bip32;
 pub mod blockdata;
 pub mod consensus;
@@ -111,7 +118,9 @@ pub mod merkle_tree;
 pub mod network;
 pub mod policy;
 pub mod pow;
+#[cfg(feature = "secp256k1")]
 pub mod psbt;
+#[cfg(feature = "secp256k1")]
 pub mod sign_message;
 pub mod taproot;
 
@@ -121,7 +130,6 @@ pub use crate::{
     address::{Address, AddressType, KnownHrp},
     amount::{Amount, Denomination, SignedAmount},
     bip158::{FilterHash, FilterHeader},
-    bip32::XKeyIdentifier,
     blockdata::block::{self, Block, BlockHash, TxMerkleNode, WitnessMerkleNode, WitnessCommitment},
     blockdata::constants,
     blockdata::fee_rate::FeeRate,
@@ -135,15 +143,23 @@ pub use crate::{
     blockdata::witness::{self, Witness},
     consensus::encode::VarInt,
     consensus::params,
-    crypto::ecdsa,
-    crypto::key::{self, PrivateKey, PubkeyHash, PublicKey, CompressedPublicKey, WPubkeyHash, XOnlyPublicKey},
+    crypto::key::{self, PubkeyHash, WPubkeyHash},
     crypto::sighash::{self, LegacySighash, SegwitV0Sighash, TapSighash, TapSighashTag},
     merkle_tree::MerkleBlock,
     network::{Network, NetworkKind},
     pow::{CompactTarget, Target, Work},
-    psbt::Psbt,
     sighash::{EcdsaSighashType, TapSighashType},
     taproot::{TapBranchTag, TapLeafHash, TapLeafTag, TapNodeHash, TapTweakHash, TapTweakTag},
+};
+
+#[rustfmt::skip]                // Keep public re-exports separate.
+#[doc(inline)]
+#[cfg(feature = "secp256k1")]
+pub use crate::{
+    bip32::XKeyIdentifier,
+    crypto::ecdsa,
+    crypto::key::{PrivateKey, PublicKey, CompressedPublicKey, XOnlyPublicKey},
+    psbt::Psbt,
 };
 
 #[rustfmt::skip]

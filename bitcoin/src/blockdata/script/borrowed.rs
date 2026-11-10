@@ -6,6 +6,7 @@ use core::ops::{
 };
 
 use hashes::Hash;
+#[cfg(feature = "secp256k1")]
 use secp256k1::{Secp256k1, Verification};
 
 use super::PushBytes;
@@ -18,10 +19,14 @@ use crate::blockdata::script::{
     ScriptHash, WScriptHash,
 };
 use crate::consensus::Encodable;
-use crate::key::{PublicKey, UntweakedPublicKey, WPubkeyHash};
+use crate::key::WPubkeyHash;
+#[cfg(feature = "secp256k1")]
+use crate::key::{PublicKey, UntweakedPublicKey};
 use crate::policy::DUST_RELAY_TX_FEE;
 use crate::prelude::*;
-use crate::taproot::{LeafVersion, TapLeafHash, TapNodeHash};
+#[cfg(feature = "secp256k1")]
+use crate::taproot::TapNodeHash;
+use crate::taproot::{LeafVersion, TapLeafHash};
 
 /// Bitcoin script slice.
 ///
@@ -153,6 +158,7 @@ impl Script {
 
     /// Computes P2TR output with a given internal key and a single script spending path equal to
     /// the current script, assuming that the script is a Tapscript.
+    #[cfg(feature = "secp256k1")]
     #[inline]
     pub fn to_p2tr<C: Verification>(
         &self,
@@ -246,6 +252,7 @@ impl Script {
     /// This may return `None` even when [`is_p2pk()`](Self::is_p2pk) returns true.
     /// This happens when the public key is invalid (e.g. the point not being on the curve).
     /// In this situation the script is unspendable.
+    #[cfg(feature = "secp256k1")]
     #[inline]
     pub fn p2pk_public_key(&self) -> Option<PublicKey> {
         PublicKey::from_slice(self.p2pk_pubkey_bytes()?).ok()
