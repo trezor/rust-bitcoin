@@ -32,6 +32,7 @@ pub(crate) const UINT256_ONE: [u8; 32] = [
     0, 0, 0, 0, 0, 0, 0, 0
 ];
 
+#[cfg(feature = "secp256k1")]
 macro_rules! impl_message_from_hash {
     ($ty:ident) => {
         impl From<$ty> for secp256k1::Message {
@@ -52,7 +53,9 @@ hash_newtype! {
     pub struct SegwitV0Sighash(sha256d::Hash);
 }
 
+#[cfg(feature = "secp256k1")]
 impl_message_from_hash!(LegacySighash);
+#[cfg(feature = "secp256k1")]
 impl_message_from_hash!(SegwitV0Sighash);
 
 sha256t_hash_newtype! {
@@ -65,6 +68,7 @@ sha256t_hash_newtype! {
     pub struct TapSighash(_);
 }
 
+#[cfg(feature = "secp256k1")]
 impl_message_from_hash!(TapSighash);
 
 /// Efficiently calculates signature hash message for legacy, segwit and taproot inputs.
@@ -1771,6 +1775,7 @@ mod tests {
         assert_eq!(expected, hash.to_byte_array());
     }
 
+    #[cfg(feature = "secp256k1")]
     #[cfg(feature = "serde")]
     #[test]
     fn bip_341_sighash_tests() {

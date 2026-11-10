@@ -2,6 +2,7 @@
 
 use core::fmt;
 
+#[cfg(feature = "secp256k1")]
 use secp256k1::XOnlyPublicKey;
 
 use crate::blockdata::locktime::absolute;
@@ -9,6 +10,7 @@ use crate::blockdata::opcodes::all::*;
 use crate::blockdata::opcodes::{self, Opcode};
 use crate::blockdata::script::{opcode_to_verify, write_scriptint, PushBytes, Script, ScriptBuf};
 use crate::blockdata::transaction::Sequence;
+#[cfg(feature = "secp256k1")]
 use crate::key::PublicKey;
 use crate::prelude::*;
 
@@ -64,6 +66,7 @@ impl Builder {
     }
 
     /// Adds instructions to push a public key onto the stack.
+    #[cfg(feature = "secp256k1")]
     pub fn push_key(self, key: &PublicKey) -> Builder {
         if key.compressed {
             self.push_slice(key.inner.serialize())
@@ -73,6 +76,7 @@ impl Builder {
     }
 
     /// Adds instructions to push an XOnly public key onto the stack.
+    #[cfg(feature = "secp256k1")]
     pub fn push_x_only_key(self, x_only_key: &XOnlyPublicKey) -> Builder {
         self.push_slice(x_only_key.serialize())
     }

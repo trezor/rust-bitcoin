@@ -4,6 +4,7 @@
 use core::ops::Deref;
 
 use hex::FromHex;
+#[cfg(feature = "secp256k1")]
 use secp256k1::{Secp256k1, Verification};
 
 use crate::blockdata::opcodes::all::*;
@@ -13,10 +14,11 @@ use crate::blockdata::script::witness_version::WitnessVersion;
 use crate::blockdata::script::{
     opcode_to_verify, Builder, Instruction, PushBytes, Script, ScriptHash, WScriptHash,
 };
-use crate::key::{
-    PubkeyHash, PublicKey, TapTweak, TweakedPublicKey, UntweakedPublicKey, WPubkeyHash,
-};
+use crate::key::{PubkeyHash, WPubkeyHash};
+#[cfg(feature = "secp256k1")]
+use crate::key::{PublicKey, TapTweak, TweakedPublicKey, UntweakedPublicKey};
 use crate::prelude::*;
+#[cfg(feature = "secp256k1")]
 use crate::taproot::TapNodeHash;
 
 /// An owned, growable script.
@@ -76,6 +78,7 @@ impl ScriptBuf {
     pub fn builder() -> Builder { Builder::new() }
 
     /// Generates P2PK-type of scriptPubkey.
+    #[cfg(feature = "secp256k1")]
     pub fn new_p2pk(pubkey: &PublicKey) -> Self {
         Builder::new().push_key(pubkey).push_opcode(OP_CHECKSIG).into_script()
     }
@@ -114,6 +117,7 @@ impl ScriptBuf {
 
     /// Generates P2TR for script spending path using an internal public key and some optional
     /// script tree merkle root.
+    #[cfg(feature = "secp256k1")]
     pub fn new_p2tr<C: Verification>(
         secp: &Secp256k1<C>,
         internal_key: UntweakedPublicKey,
@@ -125,6 +129,7 @@ impl ScriptBuf {
     }
 
     /// Generates P2TR for key spending path for a known [`TweakedPublicKey`].
+    #[cfg(feature = "secp256k1")]
     pub fn new_p2tr_tweaked(output_key: TweakedPublicKey) -> Self {
         // output key is 32 bytes long, so it's safe to use `new_witness_program_unchecked` (Segwitv1)
         ScriptBuf::new_witness_program_unchecked(WitnessVersion::V1, output_key.serialize())
