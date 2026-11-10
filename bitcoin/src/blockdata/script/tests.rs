@@ -1,15 +1,19 @@
 // SPDX-License-Identifier: CC0-1.0
 
+#[cfg(feature = "secp256k1")]
 use core::str::FromStr;
 
+#[cfg(feature = "secp256k1")]
 use hashes::Hash;
 use hex_lit::hex;
 
 use super::*;
 use crate::consensus::encode::{deserialize, serialize};
+#[cfg(feature = "secp256k1")]
 use crate::crypto::key::{PubkeyHash, PublicKey, WPubkeyHash, XOnlyPublicKey};
 use crate::FeeRate;
 
+#[cfg(feature = "secp256k1")]
 #[test]
 #[rustfmt::skip]
 fn script() {
@@ -47,6 +51,7 @@ fn script() {
     script = script.push_opcode(OP_CHECKSIG); comp.push(0xACu8); assert_eq!(script.as_bytes(), &comp[..]);
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn p2pk_pubkey_bytes_valid_key_and_valid_script_returns_expected_key() {
     let key_str = "0411db93e1dcdb8a016b49840f8c53bc1eb68a382e97b1482ecad7b148a6909a5cb2e0eaddfb84ccf9744464f82e160bfa9b8b64f9d4c03f999b8643f656b412a3";
@@ -56,6 +61,7 @@ fn p2pk_pubkey_bytes_valid_key_and_valid_script_returns_expected_key() {
     assert_eq!(actual.to_vec(), key.to_bytes());
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn p2pk_pubkey_bytes_no_checksig_returns_none() {
     let key_str = "0411db93e1dcdb8a016b49840f8c53bc1eb68a382e97b1482ecad7b148a6909a5cb2e0eaddfb84ccf9744464f82e160bfa9b8b64f9d4c03f999b8643f656b412a3";
@@ -77,6 +83,7 @@ fn p2pk_pubkey_bytes_no_key_returns_none() {
     assert!(no_push_bytes.p2pk_pubkey_bytes().is_none());
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn p2pk_pubkey_bytes_different_op_code_returns_none() {
     let key_str = "0411db93e1dcdb8a016b49840f8c53bc1eb68a382e97b1482ecad7b148a6909a5cb2e0eaddfb84ccf9744464f82e160bfa9b8b64f9d4c03f999b8643f656b412a3";
@@ -102,6 +109,7 @@ fn p2pk_pubkey_bytes_invalid_key_returns_some() {
     assert!(invalid_key_script.p2pk_pubkey_bytes().is_some());
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn p2pk_pubkey_bytes_compressed_key_returns_expected_key() {
     let compressed_key_str = "0311db93e1dcdb8a016b49840f8c53bc1eb68a382e97b1482ecad7b148a6909a5c";
@@ -111,6 +119,7 @@ fn p2pk_pubkey_bytes_compressed_key_returns_expected_key() {
     assert_eq!(actual.to_vec(), key.to_bytes());
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn p2pk_public_key_valid_key_and_valid_script_returns_expected_key() {
     let key_str = "0411db93e1dcdb8a016b49840f8c53bc1eb68a382e97b1482ecad7b148a6909a5cb2e0eaddfb84ccf9744464f82e160bfa9b8b64f9d4c03f999b8643f656b412a3";
@@ -120,6 +129,7 @@ fn p2pk_public_key_valid_key_and_valid_script_returns_expected_key() {
     assert_eq!(actual, key);
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn p2pk_public_key_no_checksig_returns_none() {
     let key_str = "0411db93e1dcdb8a016b49840f8c53bc1eb68a382e97b1482ecad7b148a6909a5cb2e0eaddfb84ccf9744464f82e160bfa9b8b64f9d4c03f999b8643f656b412a3";
@@ -128,18 +138,21 @@ fn p2pk_public_key_no_checksig_returns_none() {
     assert_eq!(no_checksig.p2pk_public_key(), None);
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn p2pk_public_key_empty_script_returns_none() {
     let empty_script = Script::builder().into_script();
     assert!(empty_script.p2pk_public_key().is_none());
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn p2pk_public_key_no_key_returns_none() {
     let no_push_bytes = Script::builder().push_opcode(OP_CHECKSIG).into_script();
     assert!(no_push_bytes.p2pk_public_key().is_none());
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn p2pk_public_key_different_op_code_returns_none() {
     let key_str = "0411db93e1dcdb8a016b49840f8c53bc1eb68a382e97b1482ecad7b148a6909a5cb2e0eaddfb84ccf9744464f82e160bfa9b8b64f9d4c03f999b8643f656b412a3";
@@ -148,6 +161,7 @@ fn p2pk_public_key_different_op_code_returns_none() {
     assert!(different_op_code.p2pk_public_key().is_none());
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn p2pk_public_key_incorrect_size_returns_none() {
     let malformed_key = b"21032e58afe51f9ed8ad3cc7897f634d881fdbe49816429ded8156bebd2ffd1";
@@ -156,6 +170,7 @@ fn p2pk_public_key_incorrect_size_returns_none() {
     assert!(malformed_key_script.p2pk_public_key().is_none());
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn p2pk_public_key_invalid_key_returns_none() {
     let malformed_key = b"21032e58afe51f9ed8ad3cc7897f634d881fdbe49816429ded8156bebd2ffd1ux";
@@ -164,6 +179,7 @@ fn p2pk_public_key_invalid_key_returns_none() {
     assert!(invalid_key_script.p2pk_public_key().is_none());
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn p2pk_public_key_compressed_key_returns_some() {
     let compressed_key_str = "0311db93e1dcdb8a016b49840f8c53bc1eb68a382e97b1482ecad7b148a6909a5c";
@@ -173,6 +189,7 @@ fn p2pk_public_key_compressed_key_returns_some() {
     assert_eq!(actual, key);
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn script_x_only_key() {
     // Notice the "20" which prepends the keystr. That 20 is hexadecimal for "32". The Builder automatically adds the 32 opcode
@@ -197,6 +214,7 @@ fn script_builder() {
     assert_eq!(script.to_hex_string(), "76a91416e1ae70ff0fa102905d4af297f6912bda6cce1988ac");
 }
 
+#[cfg(feature = "secp256k1")]
 #[test]
 fn script_generators() {
     let pubkey =
