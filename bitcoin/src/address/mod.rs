@@ -33,7 +33,10 @@ use core::marker::PhantomData;
 use core::str::FromStr;
 
 use bech32::primitives::hrp::Hrp;
-use hashes::{sha256, Hash, HashEngine};
+use hashes::Hash;
+#[cfg(feature = "secp256k1")]
+use hashes::{sha256, HashEngine};
+#[cfg(feature = "secp256k1")]
 use secp256k1::{Secp256k1, Verification, XOnlyPublicKey};
 
 use crate::blockdata::constants::{
@@ -44,11 +47,12 @@ use crate::blockdata::script::witness_program::WitnessProgram;
 use crate::blockdata::script::witness_version::WitnessVersion;
 use crate::blockdata::script::{self, Script, ScriptBuf, ScriptHash};
 use crate::consensus::Params;
-use crate::crypto::key::{
-    CompressedPublicKey, PubkeyHash, PublicKey, TweakedPublicKey, UntweakedPublicKey,
-};
+use crate::crypto::key::PubkeyHash;
+#[cfg(feature = "secp256k1")]
+use crate::crypto::key::{CompressedPublicKey, PublicKey, TweakedPublicKey, UntweakedPublicKey};
 use crate::network::{Network, NetworkKind};
 use crate::prelude::*;
+#[cfg(feature = "secp256k1")]
 use crate::taproot::TapNodeHash;
 
 #[rustfmt::skip]                // Keep public re-exports separate.
@@ -428,6 +432,7 @@ impl Address {
     /// Creates a witness pay to public key address from a public key.
     ///
     /// This is the native segwit address type for an output redeemable with a single signature.
+    #[cfg(feature = "secp256k1")]
     pub fn p2wpkh(pk: &CompressedPublicKey, hrp: impl Into<KnownHrp>) -> Self {
         let program = WitnessProgram::p2wpkh(pk);
         Address::from_witness_program(program, hrp)
@@ -436,6 +441,7 @@ impl Address {
     /// Creates a pay to script address that embeds a witness pay to public key.
     ///
     /// This is a segwit address type that looks familiar (as p2sh) to legacy clients.
+    #[cfg(feature = "secp256k1")]
     pub fn p2shwpkh(pk: &CompressedPublicKey, network: impl Into<NetworkKind>) -> Address {
         let builder = script::Builder::new().push_int(0).push_slice(pk.wpubkey_hash());
         let script_hash = builder.as_script().script_hash();
@@ -458,6 +464,7 @@ impl Address {
     }
 
     /// Creates a pay to taproot address from an untweaked key.
+    #[cfg(feature = "secp256k1")]
     pub fn p2tr<C: Verification>(
         secp: &Secp256k1<C>,
         internal_key: UntweakedPublicKey,
@@ -469,6 +476,7 @@ impl Address {
     }
 
     /// Creates a pay to taproot address from a pre-tweaked output key.
+    #[cfg(feature = "secp256k1")]
     pub fn p2tr_tweaked(output_key: TweakedPublicKey, hrp: impl Into<KnownHrp>) -> Address {
         let program = WitnessProgram::p2tr_tweaked(output_key);
         Address::from_witness_program(program, hrp)
@@ -637,6 +645,7 @@ impl Address {
     /// This is determined by directly comparing the address payload with either the
     /// hash of the given public key or the segwit redeem hash generated from the
     /// given key. For taproot addresses, the supplied key is assumed to be tweaked
+    #[cfg(feature = "secp256k1")]
     pub fn is_related_to_pubkey(&self, pubkey: &PublicKey) -> bool {
         let pubkey_hash = pubkey.pubkey_hash();
         let payload = self.payload_as_bytes();
@@ -651,6 +660,7 @@ impl Address {
     ///
     /// This will only work for Taproot addresses. The Public Key is
     /// assumed to have already been tweaked.
+    #[cfg(feature = "secp256k1")]
     pub fn is_related_to_xonly_pubkey(&self, xonly_pubkey: &XOnlyPublicKey) -> bool {
         xonly_pubkey.serialize() == *self.payload_as_bytes()
     }
@@ -678,6 +688,7 @@ impl Address {
     /// - For p2sh, the payload is the script hash.
     /// - For p2pkh, the payload is the pubkey hash.
     /// - For segwit addresses, the payload is the witness program.
+    #[cfg(feature = "secp256k1")]
     fn payload_as_bytes(&self) -> &[u8] {
         use AddressInner::*;
         match self.0 {
@@ -863,6 +874,7 @@ impl FromStr for Address<NetworkUnchecked> {
 }
 
 /// Convert a byte array of a pubkey hash into a segwit redeem hash
+#[cfg(feature = "secp256k1")]
 fn segwit_redeem_hash(pubkey_hash: &PubkeyHash) -> crate::hashes::hash160::Hash {
     let mut sha_engine = sha256::Hash::engine();
     sha_engine.input(&[0, 20]);
@@ -916,6 +928,7 @@ mod tests {
         roundtrips(&addr, Bitcoin);
     }
 
+    #[cfg(feature = "secp256k1")]
     #[test]
     fn test_p2pkh_from_key() {
         let key = "048d5141948c1702e8c95f438815794b87f706a8d4cd2bffad1dc1570971032c9b6042a0431ded2478b5c9cf2d81c124a5e57347a3c63ef0e7716cf54d613ba183".parse::<PublicKey>().unwrap();
@@ -960,6 +973,7 @@ mod tests {
         assert_eq!(Address::p2sh(&script, NetworkKind::Test), Err(P2shError::ExcessiveScriptSize));
     }
 
+    #[cfg(feature = "secp256k1")]
     #[test]
     fn test_p2wpkh() {
         // stolen from Bitcoin transaction: b3c8c2b6cfc335abbcb2c7823a8453f55d64b2b5125a9a61e8737230cdb8ce20
@@ -985,6 +999,7 @@ mod tests {
         roundtrips(&addr, Bitcoin);
     }
 
+    #[cfg(feature = "secp256k1")]
     #[test]
     fn test_p2shwpkh() {
         // stolen from Bitcoin transaction: ad3fd9c6b52e752ba21425435ff3dd361d6ac271531fc1d2144843a9f550ad01
@@ -1174,6 +1189,7 @@ mod tests {
         }
     }
 
+    #[cfg(feature = "secp256k1")]
     #[test]
     fn p2tr_from_untweaked() {
         //Test case from BIP-086
@@ -1191,6 +1207,7 @@ mod tests {
         roundtrips(&address, Bitcoin);
     }
 
+    #[cfg(feature = "secp256k1")]
     #[test]
     fn test_is_related_to_pubkey_p2wpkh() {
         let address_string = "bc1qhvd6suvqzjcu9pxjhrwhtrlj85ny3n2mqql5w4";
@@ -1212,6 +1229,7 @@ mod tests {
         assert!(!address.is_related_to_pubkey(&unused_pubkey))
     }
 
+    #[cfg(feature = "secp256k1")]
     #[test]
     fn test_is_related_to_pubkey_p2shwpkh() {
         let address_string = "3EZQk4F8GURH5sqVMLTFisD17yNeKa7Dfs";
@@ -1233,6 +1251,7 @@ mod tests {
         assert!(!address.is_related_to_pubkey(&unused_pubkey))
     }
 
+    #[cfg(feature = "secp256k1")]
     #[test]
     fn test_is_related_to_pubkey_p2pkh() {
         let address_string = "1J4LVanjHMu3JkXbVrahNuQCTGCRRgfWWx";
@@ -1254,6 +1273,7 @@ mod tests {
         assert!(!address.is_related_to_pubkey(&unused_pubkey))
     }
 
+    #[cfg(feature = "secp256k1")]
     #[test]
     fn test_is_related_to_pubkey_p2pkh_uncompressed_key() {
         let address_string = "msvS7KzhReCDpQEJaV2hmGNvuQqVUDuC6p";
@@ -1275,6 +1295,7 @@ mod tests {
         assert!(!address.is_related_to_pubkey(&unused_pubkey))
     }
 
+    #[cfg(feature = "secp256k1")]
     #[test]
     fn test_is_related_to_pubkey_p2tr() {
         let pubkey_string = "0347ff3dacd07a1f43805ec6808e801505a6e18245178609972a68afbc2777ff2b";
@@ -1301,6 +1322,7 @@ mod tests {
         assert!(!address.is_related_to_pubkey(&unused_pubkey));
     }
 
+    #[cfg(feature = "secp256k1")]
     #[test]
     fn test_is_related_to_xonly_pubkey() {
         let pubkey_string = "0347ff3dacd07a1f43805ec6808e801505a6e18245178609972a68afbc2777ff2b";

@@ -17,7 +17,7 @@ use io::{Read, Write};
 use crate::array_vec::ArrayVec;
 use crate::blockdata::script::ScriptBuf;
 use crate::crypto::ecdsa;
-use crate::internal_macros::{impl_asref_push_bytes, write_err};
+use crate::internal_macros::write_err;
 use crate::network::NetworkKind;
 use crate::prelude::*;
 use crate::taproot::{TapNodeHash, TapTweakHash};
@@ -253,13 +253,8 @@ impl FromStr for PublicKey {
     }
 }
 
-hashes::hash_newtype! {
-    /// A hash of a public key.
-    pub struct PubkeyHash(hash160::Hash);
-    /// SegWit version of a public key hash.
-    pub struct WPubkeyHash(hash160::Hash);
-}
-impl_asref_push_bytes!(PubkeyHash, WPubkeyHash);
+#[rustfmt::skip]                // Keep public re-exports separate.
+pub use crate::crypto::{PubkeyHash, WPubkeyHash};
 
 impl From<PublicKey> for PubkeyHash {
     fn from(key: PublicKey) -> PubkeyHash { key.pubkey_hash() }
